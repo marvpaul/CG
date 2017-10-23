@@ -14,10 +14,6 @@ glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], G
 glEnableVertexAttribArray(2); // siehe layout im vertex shader 
 glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
----------------------------------------------------------------------------------------------
-
-### Achtung die folgende Zeile ersetzt eine andere ######
-programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 
 ---------------------------------------------------------------------------------------------
 

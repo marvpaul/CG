@@ -22,6 +22,9 @@ using namespace glm;
 // Wuerfel und Kugel
 #include "objects.hpp"
 
+// Ab Uebung7 werden texture.hpp und cpp benoetigt
+#include "texture.hpp"
+
 // Erkl�ren ObenGL-Statemachine, lowlevel
 // Version 1: seit 1992, elegantes API f�r die Plattformunabh�gige 3D-Programmierung
 // Version 2: seit 2002, Erg�nzung durch Shader-Programme, die auf Grafikkarte laufen
@@ -156,6 +159,9 @@ void sendMVP()
     // Send our transformation to the currently bound shader,
     // in the "MVP" uniform, konstant fuer alle Eckpunkte
     glUniformMatrix4fv(glGetUniformLocation(programID, "MVP"), 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(programID, "M"), 1, GL_FALSE, &Model[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(programID, "V"), 1, GL_FALSE, &View[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(programID, "P"), 1, GL_FALSE, &Projection[0][0]);
 }
 
 // Ab Uebung5 werden objloader.hpp und cpp benoetigt
@@ -250,9 +256,33 @@ int main(void)
                           GL_FALSE, // Fixedpoint data normalisieren ?
                           0, // Eckpunkte direkt hintereinander gespeichert
                           (void*) 0); // abweichender Datenanfang ?
+    
+    GLuint normalbuffer; // Hier alles analog f¸r Normalen in location == 2
+    glGenBuffers(1, &normalbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(2); // siehe layout im vertex shader
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    
+    GLuint uvbuffer; // Hier alles analog f¸r Texturkoordinaten in location == 1 (2 floats u und v!)
+    glGenBuffers(1, &uvbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+    glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1); // siehe layout im vertex shader
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    
+    // Load the texture
+    GLuint Texture = loadBMP_custom("/Users/marvinkruger/CG/source/CGTutorial/resources/mandrill.bmp");
 
     // Create and compile our GLSL program from the shaders
-    programID = LoadShaders("/Users/marvinkruger/CG/source/CGTutorial/resources/TransformVertexShader.vertexshader", "/Users/marvinkruger/CG/source/CGTutorial/resources/ColorFragmentShader.fragmentshader");
+    programID = LoadShaders("/Users/marvinkruger/CG/source/CGTutorial/resources/StandardShading.vertexshader", "/Users/marvinkruger/CG/source/CGTutorial/resources/StandardShading.fragmentshader");
+    
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, Texture);
+    
+    // Set our "myTextureSampler" sampler to user Texture Unit 0
+    glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
 
     // Shader auch benutzen !
     glUseProgram(programID);
@@ -269,7 +299,9 @@ int main(void)
 
         // Projection matrix : 45� Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
         Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-
+        
+        glm::vec3 lightPos = glm::vec3(4,4,-4);
+        glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
         // Camera matrix
         View = glm::lookAt(glm::vec3(0,0,-5), // Camera is at (0,0,-5), in World Space
                            glm::vec3(0,0,0),  // and looks at the origin
@@ -284,7 +316,7 @@ int main(void)
         Model = glm::rotate(Model, angleZ, glm::vec3(0.0, 0.0, 1.0));
 
         //Scale because original model is to large
-        Model = glm::scale(Model, glm::vec3(1.0 / 1000.0, 1.0 / 1000.0, 1.0 / 1000.0));
+        Model = glm::scale(Model, glm::vec3(1.0 / 800.0, 1.0 / 800.0, 1.0 / 800.0));
 
         sendMVP();
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
@@ -299,6 +331,9 @@ int main(void)
 #ifdef UEBUNG5
     // Cleanup VBO and shader
     glDeleteBuffers(1, &vertexbuffer);
+    glDeleteBuffers(1, &normalbuffer);
+    glDeleteBuffers(1, &uvbuffer);
+    glDeleteTextures(1, &Texture);
 #endif
 
     glDeleteProgram(programID);
