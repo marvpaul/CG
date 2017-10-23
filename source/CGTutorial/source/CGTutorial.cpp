@@ -314,27 +314,42 @@ int main(void)
         Model = glm::rotate(Model, angleX, glm::vec3(1.0, 0.0, 0.0));
         Model = glm::rotate(Model, angleY, glm::vec3(0.0, 1.0, 0.0));
         Model = glm::rotate(Model, angleZ, glm::vec3(0.0, 0.0, 1.0));
-
+        
+        //Save model
+        glm::mat4 Save = Model;
+        
+        //Do teapot stuff
+        Model = glm::translate(Model, glm::vec3(1.5, 0.0, 0.0));
         //Scale because original model is to large
         Model = glm::scale(Model, glm::vec3(1.0 / 800.0, 1.0 / 800.0, 1.0 / 800.0));
-
         sendMVP();
+        glBindVertexArray(VertexArrayIDTeapot);
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-
+        
+        //Restore model, create a sphere and do some stuff with it
+        Model = Save;
+        Model = glm::scale(Model, glm::vec3(0.5, 0.5, 0.5));
+        sendMVP();
+        drawSphere(10, 10);
+        
+        Model = Save;
+        Model = glm::scale(Model, glm::vec3(0.5,0.5,0.5));
+        Model = glm::translate(Model, glm::vec3(-1.5,0,0));
+        sendMVP();
+        drawCube();
+        
         // Swap buffers
         glfwSwapBuffers(window);
 
         // Poll for and process events
         glfwPollEvents();
     }
-
-#ifdef UEBUNG5
+    
     // Cleanup VBO and shader
     glDeleteBuffers(1, &vertexbuffer);
     glDeleteBuffers(1, &normalbuffer);
     glDeleteBuffers(1, &uvbuffer);
     glDeleteTextures(1, &Texture);
-#endif
 
     glDeleteProgram(programID);
 
