@@ -120,6 +120,7 @@ void error_callback(int error, const char* description)
 float angleX = 0.0;
 float angleY = 0.0;
 float angleZ = 0.0;
+float velocity = 0.1;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -129,15 +130,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             glfwSetWindowShouldClose(window, GL_TRUE);
             break;
         case GLFW_KEY_X:
-            angleX += 5.0;
+            angleX += velocity;
             break;
 
         case GLFW_KEY_Y:
-            angleY += 5.0;
+            angleY += velocity;
             break;
 
         case GLFW_KEY_Z:
-            angleZ += 5.0;
+            angleZ += velocity;
             break;
         default:
             break;
@@ -333,8 +334,9 @@ int main(void)
         drawSphere(10, 10);
         
         Model = Save;
-        Model = glm::scale(Model, glm::vec3(0.5,0.5,0.5));
         Model = glm::translate(Model, glm::vec3(-1.5,0,0));
+        Model = glm::scale(Model, glm::vec3(0.5,0.5,0.5));
+        
         sendMVP();
         drawCube();
         
