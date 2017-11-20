@@ -51,13 +51,14 @@ GLuint loadBMP_custom(const char * imagepath){
 
 	// Create a buffer
 	data = new unsigned char [imageSize];
-
+    
 	// Read the actual data from the file into the buffer
 	fread(data,1,imageSize,file);
 
 	// Everything is in memory now, the file wan be closed
 	fclose (file);
 
+    //printf("%c", data[100]);
 	// Create one OpenGL texture
 	GLuint textureID;
 	glGenTextures(1, &textureID);
@@ -84,6 +85,41 @@ GLuint loadBMP_custom(const char * imagepath){
 
 	// Return the ID of the texture we just created
 	return textureID;
+}
+
+GLuint load_text_with_col(char r, char g, char b){
+    // Actual RGB data
+    unsigned char * data;
+    data = new unsigned char [3];
+    data[0] = r;
+    data[1] = g;
+    data[2] = b;
+    
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    
+    // Give the image to OpenGL
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    
+    // OpenGL has now copied the data. Free our own version
+    delete [] data;
+    
+    // Poor filtering, or ...
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    
+    // ... nice trilinear filtering.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    
+    // Return the ID of the texture we just created
+    return textureID;
 }
 
 /* Geht nicht mehr ab GLFW3

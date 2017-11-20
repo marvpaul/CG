@@ -153,6 +153,8 @@ glm::mat4 View;
 glm::mat4 Model;
 GLuint programID;
 
+
+
 void sendMVP()
 {
     // Our ModelViewProjection : multiplication of our 3 matrices
@@ -163,6 +165,61 @@ void sendMVP()
     glUniformMatrix4fv(glGetUniformLocation(programID, "M"), 1, GL_FALSE, &Model[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(programID, "V"), 1, GL_FALSE, &View[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(programID, "P"), 1, GL_FALSE, &Projection[0][0]);
+}
+
+void drawCoordinateSystem(){
+    float lowerScaleFactor = 1.0 / 20.0;
+    float upperScaleFactor = 3.0;
+    
+    // Load the texture
+    GLuint Texture = load_text_with_col(255, 0, 0);
+    
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, Texture);
+    
+    glm::mat4 Save = Model;
+    Model = glm::scale(Model, glm::vec3(lowerScaleFactor, lowerScaleFactor, upperScaleFactor));
+    sendMVP();
+    drawCube();
+    Model = Save;
+    
+    // Load the texture
+    GLuint Texture2 = load_text_with_col(0, 255, 0);
+    
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, Texture2);
+    
+    Save = Model;
+    Model = glm::scale(Model, glm::vec3(upperScaleFactor, lowerScaleFactor, lowerScaleFactor));
+    sendMVP();
+    drawCube();
+    Model = Save;
+    
+    // Load the texture
+    GLuint Texture3 = load_text_with_col(0, 0, 255);
+    
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, Texture3);
+    
+    Save = Model;
+    Model = glm::scale(Model, glm::vec3(lowerScaleFactor, upperScaleFactor, lowerScaleFactor));
+    sendMVP();
+    drawCube();
+    Model = Save;
+    
+}
+
+void drawSeg(float h){
+    glm::mat4 Save = Model;
+    Model = glm::translate(Model, glm::vec3(0, 0, h/2.0));
+    Model = glm::scale(Model,  glm::vec3(0.5, 0.5, h/2.0));
+    sendMVP();
+    drawSphere(10, 10);
+    Model = Save;
+      
 }
 
 // Ab Uebung5 werden objloader.hpp und cpp benoetigt
@@ -303,6 +360,13 @@ int main(void)
         
         glm::vec3 lightPos = glm::vec3(4,4,-4);
         glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
+        
+        //Add direct light
+        GLfloat lightColor1[] = {.5, .2, .2, 1};
+        GLfloat lightPos1[] = {-1, .5, .5, 0};
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
+        glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
+        
         // Camera matrix
         View = glm::lookAt(glm::vec3(0,0,-5), // Camera is at (0,0,-5), in World Space
                            glm::vec3(0,0,0),  // and looks at the origin
@@ -331,7 +395,19 @@ int main(void)
         Model = Save;
         Model = glm::scale(Model, glm::vec3(0.5, 0.5, 0.5));
         sendMVP();
-        drawSphere(10, 10);
+        //drawSphere(10, 10);
+        drawCoordinateSystem();
+        drawSeg(1.0);
+        Model = glm::translate(Model, glm::vec3(0, 0, 1.0));
+        drawSeg(1.2);
+        Model = glm::translate(Model, glm::vec3(0, 0, 1.2));
+        drawSeg(1.4);
+        
+        
+        // Load the texture
+        GLuint Texture4 = loadBMP_custom("/Users/marvinkruger/CG/source/CGTutorial/resources/mandrill.bmp");
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, Texture4);
         
         Model = Save;
         Model = glm::translate(Model, glm::vec3(-1.5,0,0));

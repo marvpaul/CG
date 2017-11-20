@@ -10,6 +10,6 @@ GLuint loadBMP_custom(const char * imagepath);
 
 // Load a .DDS file using GLFW's own loader
 GLuint loadDDS(const char * imagepath);
-
+GLuint load_text_with_col(char r, char g, char b);
 
 #endif
