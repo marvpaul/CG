@@ -121,6 +121,10 @@ float angleX = 0.0;
 float angleY = 0.0;
 float angleZ = 0.0;
 float velocity = 0.1;
+float angle1 = 0.0;
+float angle2 = 0.0;
+float angle3 = 0.0;
+float angle4 = 0.0;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -139,6 +143,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
         case GLFW_KEY_Z:
             angleZ += velocity;
+            break;
+        case GLFW_KEY_1:
+            angle1 += velocity;
+            break;
+        case GLFW_KEY_2:
+            angle2 += velocity;
+            break;
+        case GLFW_KEY_3:
+            angle3 += velocity;
+            break;
+        case GLFW_KEY_4:
+            angle4 += velocity;
             break;
         default:
             break;
@@ -215,7 +231,7 @@ void drawCoordinateSystem(){
 void drawSeg(float h){
     glm::mat4 Save = Model;
     Model = glm::translate(Model, glm::vec3(0, 0, h/2.0));
-    Model = glm::scale(Model,  glm::vec3(0.5, 0.5, h/2.0));
+    Model = glm::scale(Model,  glm::vec3(h/4, h/4, h/2.0));
     sendMVP();
     drawSphere(10, 10);
     Model = Save;
@@ -274,8 +290,7 @@ int main(void)
     // Auf Keyboard-Events reagieren
     glfwSetKeyCallback(window, key_callback);
 
-    // Dark blue background
-    glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+    
     
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
@@ -348,6 +363,9 @@ int main(void)
     // Eventloop
     while (!glfwWindowShouldClose(window))
     {
+        // Dark blue background
+        glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+        
         // Clear the screen
 #ifdef UEBUNG4
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -358,14 +376,13 @@ int main(void)
         // Projection matrix : 45� Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
         Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
         
-        glm::vec3 lightPos = glm::vec3(4,4,-4);
-        glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
+        
         
         //Add direct light
-        GLfloat lightColor1[] = {.5, .2, .2, 1};
+        /*GLfloat lightColor1[] = {.5, .2, .2, 1};
         GLfloat lightPos1[] = {-1, .5, .5, 0};
         glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
-        glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
+        glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);*/
         
         // Camera matrix
         View = glm::lookAt(glm::vec3(0,0,-5), // Camera is at (0,0,-5), in World Space
@@ -397,11 +414,21 @@ int main(void)
         sendMVP();
         //drawSphere(10, 10);
         drawCoordinateSystem();
+        
+        Model = glm::rotate(Model, angle1, glm::vec3(0, 0, 1.0));
+        Model = glm::rotate(Model, angle2, glm::vec3(0, 1.0, 0.0));
         drawSeg(1.0);
         Model = glm::translate(Model, glm::vec3(0, 0, 1.0));
+        Model = glm::rotate(Model, angle3, glm::vec3(0, 1.0, 0.0));
         drawSeg(1.2);
         Model = glm::translate(Model, glm::vec3(0, 0, 1.2));
+        Model = glm::rotate(Model, angle4, glm::vec3(0, 1.0, 0.0));
         drawSeg(1.4);
+        Model = glm::translate(Model, glm::vec3(0, 0, 1.4));
+        
+        glm::vec4 lpw = Model * glm::vec4(0,0,0,1);
+        glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lpw.x, lpw.y, lpw.z);
+        
         
         
         // Load the texture
